@@ -11,7 +11,7 @@ npm install
 
 php artisan passport:keys
 
-php artisan passport:client
+php artisan passport:client --personal
 
 php artisan migrate
 
