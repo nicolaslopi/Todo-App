@@ -1,11 +1,19 @@
 Para ejecutar el proyecto son necesarios los siguientes comando:
 
 composer install
-nmp install
+
+npm install
+
 php artisan passport:keys
+
 php artisan passport:client
+
 php artisan migrate
 
-Por último para crear en la base de datos las etiquetas para la creación de las notas debido a aue no existe un CRUD para ellas, entonces ejecutamos:
+Para crear en la base de datos las etiquetas para la creación de las notas, debido a que no existe un CRUD para ellas, entonces ejecutamos:
 
 php artisan db:seed --class=LabelSeeder
+
+Por último, para levantar el servidor
+
+php artisan serve 
