@@ -23,37 +23,36 @@
                 ></v-select>
                 <span v-if="errorLabel" class="text-danger">{{ errorLabel }}</span>
             </div>
-            <div class="text-center">
-                <button type="submit" class="btn mt-4 text-white fs-5" style="width: 50%;">Registrar</button>
+            <div class="text-center d-flex justify-content-around">
+                <button class="btn mt-4 fs-5 bg-grey" style="width: 40%;" @click.prevent="handleCloseDialog">Cancelar</button>
+                <button type="submit" class="btn mt-4 text-white fs-5 btn-save" style="width: 40%;">Guardar</button>
             </div>
-            {{ actionForm }}
         </form>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, defineEmits, defineProps, computed, onMounted } from 'vue'
-import axios from 'axios'
 import { useForm } from "vee-validate";
-import * as yup from 'yup';
+import { computed, defineEmits, defineProps, onMounted, ref } from 'vue';
 import { useStore } from 'vuex';
+import * as yup from 'yup';
 
 
 //Definición de props
 const props = defineProps({
     noteInfo: Object,
-    actionForm: String
+    formAction: String
 })
 
 // Estado para las etiquetas seleccionadas
 const selectedLabels = ref([])
 const errorLabel = ref('')
-const infoToUpdate = ref(props.noteInfo || null)
+const action = ref('')
 
 const store = useStore()
 
 //Definición de emits
-const emits = defineEmits(['formSubmitted'])
+const emit = defineEmits(['formSubmitted', 'closeDialog', 'handleErrorSubmit'])
 
 
 //Getters
@@ -77,10 +76,21 @@ const [description, descriptionAttrs] = defineField('description')
 
 //Funciones para manejar el envío del formulario
 
-const handleNoteCreate = async (data) => {
+const handleCreateNote = async (data) => {
     const response = await store.dispatch('notes/createNote', data)
     if(response){
-        emits('formSubmitted')
+        emit('formSubmitted', {success: true, message: 'Creación exitosa'})
+    } else{
+        emit('handleErrorSubmit', {success: false, message: 'Ha ocurrido un error'})
+    }
+}
+
+const handleUpdateNote = async (data) => {
+    const response = await store.dispatch('notes/updateNote', data)
+    if(response){
+        emit('formSubmitted', {success: true, message: 'Actualización exitosa'})
+    }else{
+        emit('handleErrorSubmit', {success: false, message: 'Ha ocurrido un error'})
     }
 }
 
@@ -90,12 +100,22 @@ const onSubmit = handleSubmit(values => {
     } else {
         errorLabel.value = ''
         const newValues = {...values, labels: selectedLabels.value}
-        handleNoteCreate(newValues)
+        if(props.formAction === 'create'){
+            handleCreateNote(newValues)
+        }else {
+            handleUpdateNote({...newValues, id: props.noteInfo.id, user_id: props.noteInfo.user_id, labels: selectedLabels.value.map(item => item.id)});
+        }
     }
 })
 
+const handleCloseDialog = () => {
+
+    emit('closeDialog')
+}
+
 onMounted(()=>{
-    if(props.noteInfo){
+
+    if(props.formAction === 'update'){
         const info = props.noteInfo
         title.value = info.title
         description.value = info.description
@@ -106,7 +126,7 @@ onMounted(()=>{
 </script>
 
 <style scoped lang="scss">
-button {
+.btn-save{
     background-color: $primary-color;
 
     &:hover {

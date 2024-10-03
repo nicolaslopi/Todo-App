@@ -1,6 +1,6 @@
 <template>
     <MainLayout #main>
-        <NoteList @notesList="notes"></NoteList>
+        <NoteList></NoteList>
     </MainLayout>
 </template>
 

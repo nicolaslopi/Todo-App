@@ -61,8 +61,4 @@ button {
     color: white;
 }
 </style>
-<!-- axios.post('/api/login', credentials).then(response => {
-    console.log(response);
-}).catch(error => {
-    console.log(error);
-}) -->
+

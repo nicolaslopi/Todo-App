@@ -16,8 +16,16 @@ const actions = {
     async registerUser({ commit }, data) {
         try {
             const response = await axios.post("/api/register", data);
-            commit("SET_TOKEN", response.data.data.token);
-            localStorage.setItem("token", response.data.data.token);
+
+            const userInfo = {id: response.data.data.id, name: response.data.data.name}
+            const userToken = response.data.data.token
+
+            commit("SET_USER", userInfo);
+            commit("SET_TOKEN", userToken);
+
+            localStorage.setItem("token", userToken);
+            localStorage.setItem("user", JSON.stringify(userInfo));
+
             return true
         } catch (error) {
             commit("SET_ERROR", error.response.data.data.error);
@@ -28,7 +36,7 @@ const actions = {
         try {
 
             const response = await axios.post("/api/login", credentials);
-
+            console.log(response);
             const userInfo = {id: response.data.data.id, name: response.data.data.name}
             const userToken = response.data.data.token
 

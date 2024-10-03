@@ -15,7 +15,7 @@ class NoteController extends BaseController
     {
         // $notes = Note::paginate(4);
         // $labels = $notes->labels;
-        $notes = Note::with('labels')->paginate(4);
+        $notes = Note::with('labels')->orderBy('created_at', 'desc')->paginate(5);
 
         return $this->sendResponse($notes, '');
     }

@@ -32,6 +32,7 @@ class AuthController extends BaseController
         $user = User::create($input);
         $success['token'] =  $user->createToken('todoapp')->accessToken;
         $success['name'] =  $user->name;
+        $success['id'] =  $user->id;
 
         return $this->sendResponse($success, 'Usuario registrado exitosamente.');
     }

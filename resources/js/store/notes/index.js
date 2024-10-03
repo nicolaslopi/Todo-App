@@ -18,7 +18,6 @@ const getters = {
 const actions = {
     async fetchNotes({ commit, state, rootState }){
         try {
-            console.log(rootState.auth.token);
             const response = await axios.get("/api/notes", {
                 headers: {
                     'Authorization': `Bearer ${rootState.auth.token}`,
@@ -38,7 +37,6 @@ const actions = {
 
             }
 
-            console.log(paginationInfo);
             commit('SET_NOTES', noteRes)
             commit('SET_PAGINATION', paginationInfo)
 
@@ -61,16 +59,30 @@ const actions = {
             })
 
             const noteFounded = response.data.data
-            commit('SET_NOTE', newArray)
+            commit('SET_NOTE', noteFounded)
             return true
         } catch (error) {
-            console.log(error);
+            return false
+        }
+    },
+    async fetchLabels({ commit, rootState }){
+        try {
+            const response = await axios.get('/api/notes/create', {
+                headers: {
+                    'Authorization': `Bearer ${rootState.auth.token}`,
+                    'Content-Type': 'application/json'
+                  }
+            });
+            commit('SET_LABELS', response.data.data)
+
+            return true
+
+        } catch (error) {
             return false
         }
     },
     async paginationNotes({ commit, state, rootState }, page){
         try {
-            console.log(page);
             const response = await axios.get(`/api/notes?page=${page}`, {
                 headers: {
                     'Authorization': `Bearer ${rootState.auth.token}`,
@@ -90,14 +102,12 @@ const actions = {
 
             }
 
-            console.log(paginationInfo);
             commit('SET_NOTES', noteRes)
             commit('SET_PAGINATION', paginationInfo)
 
             return true
 
         } catch (error) {
-            console.log(error);
             commit('SET_ERROR', error.response.data.message)
 
             return false
@@ -106,54 +116,45 @@ const actions = {
     async createNote({ commit, rootState}, data){
         try {
             const newNote = {...data, user_id: rootState.auth.user.id}
-            console.log(newNote);
             const response = await axios.post('/api/notes', newNote, {
                 headers: {
                     'Authorization': `Bearer ${rootState.auth.token}`,
                     'Content-Type': 'application/json'
                   }
             })
-            const newArray = [...state.notes, response.data.data]
+
+            const labelsNote = state.labels.filter(obj1 => data.labels.some(obj2 => obj2 === obj1.id))
+            const noteRes = {...response.data.data, labels: labelsNote}
+            const newArray = [...state.notes, noteRes]
             commit('SET_NOTES', newArray)
             return true
         } catch (error) {
-            console.log(error);
-            return false
-        }
-    },
-    async fetchLabels({ commit, rootState }){
-        try {
-            const response = await axios.get('/api/notes/create', {
-                headers: {
-                    'Authorization': `Bearer ${rootState.auth.token}`,
-                    'Content-Type': 'application/json'
-                  }
-            });
-            commit('SET_LABELS', response.data.data)
-
-            console.log(response.data.data);
-            return true
-
-        } catch (error) {
-            console.log(error);
             return false
         }
     },
     async updateNote({ commit, rootState}, data){
         try {
-            const newNote = {...data, user_id: rootState.auth.user.id}
-            console.log(newNote);
-            const response = await axios.put(`/api/notes/${newNote.id}`, newNote, {
+            const response = await axios.put(`/api/notes/${data.id}`, data, {
                 headers: {
                     'Authorization': `Bearer ${rootState.auth.token}`,
                     'Content-Type': 'application/json'
                   }
             })
-            const newArray = [...state.notes, response.data.data]
+
+            const labelsNote = state.labels.filter(obj1 => data.labels.some(obj2 => obj2 === obj1.id))
+            const newArray = [...state.notes]
+
+            const index = newArray.findIndex(item => item.id === data.id);
+            if(index !== -1){
+                const updatedNote = {...newArray[index], ...data, labels: labelsNote}
+                newArray[index] = updatedNote
+            }
+
             commit('SET_NOTES', newArray)
+
             return true
+
         } catch (error) {
-            console.log(error);
             return false
         }
     },
@@ -170,7 +171,6 @@ const actions = {
             commit('SET_NOTES', newArray)
             return true
         } catch (error) {
-            console.log(error);
             return false
         }
     },
@@ -183,7 +183,7 @@ const mutations = {
     },
 
     SET_NOTE(state, note){
-        state.notes = note
+        state.note = note
     },
 
     SET_LABELS(state, labels){
